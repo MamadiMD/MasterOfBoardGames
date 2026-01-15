@@ -81,4 +81,23 @@ public class Game : MonoBehaviour
         position[cm.GetXBoard(), cm.GetYBoard()] = obj;
     }
 
+    public void SetPositionEmpty(int x, int y)
+    {
+        position[x, y] = null;
+    }
+
+    public GameObject GetPosition(int x, int y)
+    {
+        return position[x, y];
+    }
+
+    public bool PositionOnBoard(int x, int y)
+    {
+        if(x < 0 || y < 0 || x >=  position.GetLength(0) || y >= position.GetLength(1))
+        {
+            return false;
+        }
+        return true;
+    }
+
 }

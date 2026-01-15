@@ -72,5 +72,66 @@ public class Chessman : MonoBehaviour
         yBoard = y;
     }
 
+    private void OnMouseUp()
+    {
+        DestroyMovePlates();
 
+        InitiateMovePlates();
+    }
+
+    public void DestroyMovePlates()
+    {
+        GameObject[] movePlates = GameObject.FindGameObjectsWithTag("MovePlate");
+
+        for (int i = 0; i < movePlates.Length; i++)
+        {
+            Destroy(movePlates[i]);
+        }
+    }
+
+    public void InitiateMovePlates()
+    {
+        switch (this.name)
+        {
+            case "Reina_Negra":
+            case "Reina_Blanca":
+                LineMovePlate(1,0);
+                LineMovePlate(0,1);
+                LineMovePlate(1,1);
+                LineMovePlate(-1,0);
+                LineMovePlate(0,-1);
+                LineMovePlate(-1,-1);
+                LineMovePlate(1,-1);
+                LineMovePlate(-1,1);
+                break;
+            case "Caballo_Negro":
+            case "Caballo_Blanco":
+                LMovePlate();
+                break;
+            case "Alfil_Negro":
+            case "Alfil_Blanco":
+                LineMovePlate(1,1);
+                LineMovePlate(-1,1);
+                LineMovePlate(1,-1);
+                LineMovePlate(-1,-1);
+                break;
+            case "Rey_Negro":
+            case "Rey_Blanco":
+                SurroundMovePlate();
+                break;
+            case "Torre_Negra":
+            case "Torre_Blanca":
+                LineMovePlate(1,0);
+                LineMovePlate(0,1);
+                LineMovePlate(-1,0);
+                LineMovePlate(0,-1);
+                break;
+            case "Peon_Negro":
+                PawnMovePlate(xBoard,yBoard,-1);
+                break;
+            case "Peon_Blanco":
+                PawnMovePlate(xBoard,yBoard,+1);
+                break;
+        }
+    }
 }
