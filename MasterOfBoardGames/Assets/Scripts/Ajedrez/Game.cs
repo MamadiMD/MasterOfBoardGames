@@ -47,14 +47,14 @@ public class Game : MonoBehaviour
             Create("Torre_Negra", 7, 7),
             Create("Caballo_Negro", 1, 7),
             Create("Caballo_Negro", 6, 7),
-            Create("Peon_Negra", 0, 6),
-            Create("Peon_Negra", 1, 6),
-            Create("Peon_Negra", 2, 6),
-            Create("Peon_Negra", 3, 6),
-            Create("Peon_Negra", 4, 6),
-            Create("Peon_Negra", 5, 6),
-            Create("Peon_Negra", 6, 6),
-            Create("Peon_Negra", 7, 6)
+            Create("Peon_Negro", 0, 6),
+            Create("Peon_Negro", 1, 6),
+            Create("Peon_Negro", 2, 6),
+            Create("Peon_Negro", 3, 6),
+            Create("Peon_Negro", 4, 6),
+            Create("Peon_Negro", 5, 6),
+            Create("Peon_Negro", 6, 6),
+            Create("Peon_Negro", 7, 6)
         };
 
         for(int i = 0 ; i < piezasNegras.Length ; i++)
