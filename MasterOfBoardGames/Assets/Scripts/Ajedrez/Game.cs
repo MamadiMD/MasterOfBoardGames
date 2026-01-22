@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Game : MonoBehaviour
 {
@@ -98,6 +99,37 @@ public class Game : MonoBehaviour
             return false;
         }
         return true;
+    }
+
+    public string GetCurrentPlayer()
+    {
+        return currentPlayer;
+    }
+
+    public bool IsGameOver()
+    {
+        return gameOver;
+    }
+
+    public void NextTurn()
+    {
+        if (currentPlayer == "Blanco")
+        {
+            currentPlayer = "Negro";
+        }
+        else
+        {
+            currentPlayer = "Blanco";
+        }
+    }
+
+    public void Update()
+    {
+        if(gameOver == true && Input.GetMouseButtonDown(0))
+        {
+            gameOver = false;
+            SceneManager.LoadScene("Ajedrez");
+        }
     }
 
 }

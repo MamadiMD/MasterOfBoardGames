@@ -15,7 +15,7 @@ public class MovePlate : MonoBehaviour
 
     public void Start(){
         if(attack){
-            gameObject.GetComponent<SpriteRenderer>().color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+            gameObject.GetComponent<SpriteRenderer>().color = new Color(1.1f, 0.0f, 0.0f, 1.1f);
         }
     }
 
@@ -34,6 +34,8 @@ public class MovePlate : MonoBehaviour
         reference.GetComponent<Chessman>().SetCoords();
 
         controller.GetComponent<Game>().SetPosition(reference);
+
+        controller.GetComponent<Game>().NextTurn();
 
         reference.GetComponent<Chessman>().DestroyMovePlates();
     }

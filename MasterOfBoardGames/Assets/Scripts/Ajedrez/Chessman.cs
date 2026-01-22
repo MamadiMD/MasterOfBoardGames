@@ -72,11 +72,15 @@ public class Chessman : MonoBehaviour
         yBoard = y;
     }
 
+    // metodo critico por el cual no se mueven las fichas
     private void OnMouseUp()
     {
+        if (!controller.GetComponent<Game>().IsGameOver() && controller.GetComponent<Game>().GetCurrentPlayer() == player)
+        {
         DestroyMovePlates();
 
         InitiateMovePlates();
+        }
     }
 
     public void DestroyMovePlates()
