@@ -8,6 +8,8 @@ public class Game : MonoBehaviour
 {
     //Reference from Unity IDE
     public GameObject chesspiece;
+    bool cpuPlaying = false;
+    public bool cpuTurn = false;
 
     //Matrices needed, positions of each of the GameObjects
     //Also separate arrays for the players in order to easily keep track of them all
@@ -106,11 +108,17 @@ public class Game : MonoBehaviour
 
     public void Update()
     {
+        if (gameOver) return;
+
+        if (currentPlayer == "black" && !cpuTurn)
+    {
+        StartCoroutine(CPUTurn());
+    }
+
         if (gameOver == true && Input.GetMouseButtonDown(0))
         {
             gameOver = false;
-
-            SceneManager.LoadScene("Ajedrez"); 
+            SceneManager.LoadScene("Ajedrez");
         }
     }
     
@@ -122,5 +130,42 @@ public class Game : MonoBehaviour
         GameObject.FindGameObjectWithTag("WinnerText").GetComponent<Text>().text = "A GANADO : " + playerWinner;
 
         GameObject.FindGameObjectWithTag("RestartText").GetComponent<Text>().enabled = true;
+    }
+
+    IEnumerator CPUTurn()
+    {
+    cpuPlaying = true;
+    cpuTurn = true;
+
+    yield return new WaitForSeconds(0.6f);
+
+    List<GameObject> pieces = new List<GameObject>();
+
+    foreach (GameObject piece in playerBlack)
+        if (piece != null)
+            pieces.Add(piece);
+
+    GameObject pieceChoosed = pieces[Random.Range(0, pieces.Count)];
+    Chessman cm = pieceChoosed.GetComponent<Chessman>();
+
+    cm.DestroyMovePlates();
+    cm.InitiateMovePlates();
+
+    yield return new WaitForSeconds(0.2f);
+
+    GameObject[] moves = GameObject.FindGameObjectsWithTag("MovePlate");
+
+    if (moves.Length > 0)
+    {
+        GameObject elegido = moves[Random.Range(0, moves.Length)];
+        elegido.GetComponent<MovePlate>().ExecuteMovement();
+    }
+    else
+    {
+        NextTurn();
+    }
+
+    cpuTurn = false;
+    cpuPlaying = false;
     }
 }

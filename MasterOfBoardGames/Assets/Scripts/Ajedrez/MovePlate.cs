@@ -28,36 +28,7 @@ public class MovePlate : MonoBehaviour
 
     public void OnMouseUp()
     {
-        controller = GameObject.FindGameObjectWithTag("GameController");
-
-        //Destroy the victim Chesspiece
-        if (attack)
-        {
-            GameObject cp = controller.GetComponent<Game>().GetPosition(matrixX, matrixY);
-
-            if (cp.name == "white_king") controller.GetComponent<Game>().Winner("LA CPU");
-            if (cp.name == "black_king") controller.GetComponent<Game>().Winner("EL JUGADOR");
-
-            Destroy(cp);
-        }
-
-        //Set the Chesspiece's original location to be empty
-        controller.GetComponent<Game>().SetPositionEmpty(reference.GetComponent<Chessman>().GetXBoard(), 
-            reference.GetComponent<Chessman>().GetYBoard());
-
-        //Move reference chess piece to this position
-        reference.GetComponent<Chessman>().SetXBoard(matrixX);
-        reference.GetComponent<Chessman>().SetYBoard(matrixY);
-        reference.GetComponent<Chessman>().SetCoords();
-
-        //Update the matrix
-        controller.GetComponent<Game>().SetPosition(reference);
-
-        //Switch Current Player
-        controller.GetComponent<Game>().NextTurn();
-
-        //Destroy the move plates including self
-        reference.GetComponent<Chessman>().DestroyMovePlates();
+        ExecuteMovement();
     }
 
     public void SetCoords(int x, int y)
@@ -74,5 +45,36 @@ public class MovePlate : MonoBehaviour
     public GameObject GetReference()
     {
         return reference;
+    }
+
+    public void ExecuteMovement()
+    {
+        controller = GameObject.FindGameObjectWithTag("GameController");
+
+        if (attack)
+        {
+            GameObject cp = controller.GetComponent<Game>().GetPosition(matrixX, matrixY);
+
+            if (cp.name == "white_king")
+                controller.GetComponent<Game>().Winner("LA CPU");
+
+            if (cp.name == "black_king")
+                controller.GetComponent<Game>().Winner("EL JUGADOR");
+
+            Destroy(cp);
+        }
+
+        controller.GetComponent<Game>().SetPositionEmpty(
+            reference.GetComponent<Chessman>().GetXBoard(),
+            reference.GetComponent<Chessman>().GetYBoard()
+        );
+
+        reference.GetComponent<Chessman>().SetXBoard(matrixX);
+        reference.GetComponent<Chessman>().SetYBoard(matrixY);
+        reference.GetComponent<Chessman>().SetCoords();
+
+        controller.GetComponent<Game>().SetPosition(reference);
+        controller.GetComponent<Game>().NextTurn();
+        reference.GetComponent<Chessman>().DestroyMovePlates();
     }
 }
