@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Juego.unity
     guid: c5f1308dc20afa240b77bafaf14e41e3
+  - enabled: 1
+    path: Assets/Scenes/Ajedrez.unity
+    guid: 794cc7caebb3de447b90c8639a4f986f
   m_configObjects: {}

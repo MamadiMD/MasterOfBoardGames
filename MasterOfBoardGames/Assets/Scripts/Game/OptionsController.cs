@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class OptionsController : MonoBehaviour
 {
     public GameObject canvasOpciones;
+    public GameObject canvasAjedrez;
     public AudioSource audioClick;
     public void VolverMenu()
     {
@@ -24,5 +25,25 @@ public class OptionsController : MonoBehaviour
     {
         audioClick.Play();
         canvasOpciones.SetActive(true);
+    }
+
+    // Ajedrez Options
+
+    public void CerrarAjedrez()
+    {
+        audioClick.Play();
+        canvasAjedrez.SetActive(false);
+    }
+
+    public void JugarAjedrez()
+    {
+        audioClick.Play();
+        SceneManager.LoadScene(2);
+    }
+
+    public void AbrirAjedrez()
+    {
+        audioClick.Play();
+        canvasAjedrez.SetActive(true);
     }
 }
