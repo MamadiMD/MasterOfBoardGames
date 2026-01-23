@@ -100,18 +100,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 0}
   movePlate: {fileID: 3217535051130468646, guid: 7278279523092ba49bb351885af1753b, type: 3}
-  Reina_Negra: {fileID: 1900523514, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  Rey_Negro: {fileID: -1149291803, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  Alfil_Negro: {fileID: 782255335, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  Torre_Negra: {fileID: 793104229, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  Caballo_Negro: {fileID: -1947659096, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  Peon_Negro: {fileID: -77885982, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  Reina_Blanca: {fileID: 1259759045, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
-  Rey_Blanco: {fileID: -4872091, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
-  Alfil_Blanco: {fileID: -297561766, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
-  Torre_Blanca: {fileID: 1570843095, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
-  Caballo_Blanco: {fileID: -1449656951, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
-  Peon_Blanco: {fileID: 1651835708, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
+  black_queen: {fileID: 1900523514, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
+  black_knight: {fileID: -1947659096, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
+  black_bishop: {fileID: 782255335, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
+  black_king: {fileID: -1149291803, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
+  black_rook: {fileID: 793104229, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
+  black_pawn: {fileID: -77885982, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
+  white_queen: {fileID: 1259759045, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
+  white_knight: {fileID: -1449656951, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
+  white_bishop: {fileID: -297561766, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
+  white_king: {fileID: -4872091, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
+  white_rook: {fileID: 1570843095, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
+  white_pawn: {fileID: 1651835708, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
 --- !u!65 &-4269578264949205804
 BoxCollider:
   m_ObjectHideFlags: 0
