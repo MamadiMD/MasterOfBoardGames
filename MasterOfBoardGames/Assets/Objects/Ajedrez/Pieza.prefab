@@ -100,12 +100,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 0}
   movePlate: {fileID: 3217535051130468646, guid: 7278279523092ba49bb351885af1753b, type: 3}
-  black_queen: {fileID: 1900523514, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  black_knight: {fileID: -1947659096, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  black_bishop: {fileID: 782255335, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  black_king: {fileID: -1149291803, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  black_rook: {fileID: 793104229, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
-  black_pawn: {fileID: -77885982, guid: 8ac0f9e7c89138f449270e5b9887d266, type: 3}
+  black_queen: {fileID: -32239998, guid: 144f53c3c365df4459daaa1064dcca74, type: 3}
+  black_knight: {fileID: -1964046430, guid: 144f53c3c365df4459daaa1064dcca74, type: 3}
+  black_bishop: {fileID: -908158843, guid: 144f53c3c365df4459daaa1064dcca74, type: 3}
+  black_king: {fileID: -388189942, guid: 144f53c3c365df4459daaa1064dcca74, type: 3}
+  black_rook: {fileID: 2115682964, guid: 144f53c3c365df4459daaa1064dcca74, type: 3}
+  black_pawn: {fileID: 1232993487, guid: 144f53c3c365df4459daaa1064dcca74, type: 3}
   white_queen: {fileID: 1259759045, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
   white_knight: {fileID: -1449656951, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
   white_bishop: {fileID: -297561766, guid: 20294af1325cb24488eb70e971bf3424, type: 3}
