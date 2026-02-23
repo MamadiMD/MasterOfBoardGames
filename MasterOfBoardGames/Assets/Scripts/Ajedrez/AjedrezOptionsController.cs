@@ -3,16 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class OptionsController : MonoBehaviour
+
+public class AjedrezOptionsController : MonoBehaviour
 {
     public GameObject canvasOpciones;
-    public GameObject canvasAjedrez;
+    public GameObject canvasInstrucciones;
     public AudioSource audioClick;
-    public void VolverMenu()
+    public void Rendirse()
+    {
+        audioClick.Play();
+        SceneManager.LoadScene(1);
+    }
+
+    public void Reiniciar()
     {
         audioClick.Play();
         int escenaActual = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(escenaActual);
     }
 
     public void CerrarOpciones()
@@ -27,24 +34,17 @@ public class OptionsController : MonoBehaviour
         canvasOpciones.SetActive(true);
     }
 
-    // Ajedrez Options
+    // Instrucciones
 
-    public void CerrarAjedrez()
+    public void CerrarInstrucciones()
     {
         audioClick.Play();
-        canvasAjedrez.SetActive(false);
-    }
-
-    public void JugarAjedrez()
-    {
-        audioClick.Play();
-        SceneManager.LoadScene(2);
-    }
-
-    public void AbrirAjedrez()
-    {
-        audioClick.Play();
-        canvasAjedrez.SetActive(true);
+        canvasInstrucciones.SetActive(false);
     }
     
+    public void AbrirInstrucciones()
+    {
+        audioClick.Play();
+        canvasInstrucciones.SetActive(true);
+    }
 }
