@@ -12,6 +12,7 @@ public class AjedrezOptionsController : MonoBehaviour
     public void Rendirse()
     {
         audioClick.Play();
+        GameManager.instance.GanaCPU();
         SceneManager.LoadScene(1);
     }
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -127,10 +127,27 @@ public class Game : MonoBehaviour
         gameOver = true;
 
         GameObject.FindGameObjectWithTag("WinnerText").GetComponent<Text>().enabled = true;
-        GameObject.FindGameObjectWithTag("WinnerText").GetComponent<Text>().text = "A GANADO : " + playerWinner;
+        GameObject.FindGameObjectWithTag("WinnerText").GetComponent<Text>().text = "!" + playerWinner + " HA GANADO LA PARTIDA¡";
 
         GameObject.FindGameObjectWithTag("RestartText").GetComponent<Text>().enabled = true;
+
+        StartCoroutine(FinPartida(playerWinner));
+
     }
+
+    IEnumerator FinPartida(string winner)
+{
+    yield return new WaitForSeconds(2f);
+
+    if (winner == "EL JUGADOR")
+    {
+        GameManager.instance.GanaJugador();
+    }
+    else if (winner == "LA CPU")
+    {
+        GameManager.instance.GanaCPU();
+    }
+}
 
     IEnumerator CPUTurn()
     {

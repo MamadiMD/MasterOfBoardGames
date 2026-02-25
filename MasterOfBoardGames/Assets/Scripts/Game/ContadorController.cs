@@ -13,7 +13,7 @@ public class ContadorController : MonoBehaviour
         ActualizarContador();
     }
 
-    void Update()
+    void OnEnable()
     {
         ActualizarContador();
     }
