@@ -7,6 +7,7 @@ public class Ficha : MonoBehaviour
     public int gridX;
     public int gridY;
     public int tipoFicha;
+    public bool esDama = false;
 
     private SpriteRenderer spriteRenderer;
     private Color colorOriginal;
@@ -25,5 +26,13 @@ public class Ficha : MonoBehaviour
             spriteRenderer.color = colorOriginal; 
     }
 
+    public void Coronar()
+    {
+        esDama = true;
+        if (tipoFicha == 1) spriteRenderer.color = Color.cyan; 
+        if (tipoFicha == 2) spriteRenderer.color = Color.magenta; 
+        
+        colorOriginal = spriteRenderer.color;
+    }
 
 }

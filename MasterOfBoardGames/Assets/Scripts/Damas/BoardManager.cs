@@ -103,53 +103,98 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    void IntentarMoverFicha(int x, int y)
+    public void IntentarMoverFicha(int x, int y)
     {
-        // 1. Comprobar que la casilla de destino está vacía
-        if (logicBoard[x, y] != 0)
-        {
-            return; // Si no está vacía, no hacemos nada
-        }
+        if (logicBoard[x, y] != 0) return; // La casilla destino debe estar vacía
 
-        // 2. Calcular cuántas casillas nos estamos moviendo
-        int distanciaX = Mathf.Abs(x - fichaSeleccionada.gridX); // Absoluto porque puede ser izquierda o derecha
-        int distanciaY = y - fichaSeleccionada.gridY; // Sin absoluto porque importa si va hacia arriba o abajo
+        int distanciaX = Mathf.Abs(x - fichaSeleccionada.gridX);
+        int distanciaY = y - fichaSeleccionada.gridY;
 
         bool movimientoValido = false;
+        bool esCaptura = false;
+        Ficha fichaCapturada = null;
 
-        // Reglas para las Blancas (tipoFicha == 1): Se mueven 1 paso en X y +1 paso en Y (hacia arriba)
-        if (fichaSeleccionada.tipoFicha == 1 && distanciaX == 1 && distanciaY == 1)
-        {
-            movimientoValido = true;
-        }
-        // Reglas para las Negras (tipoFicha == 2): Se mueven 1 paso en X y -1 paso en Y (hacia abajo)
-        else if (fichaSeleccionada.tipoFicha == 2 && distanciaX == 1 && distanciaY == -1)
-        {
-            movimientoValido = true;
+        // Comprobamos si va en la direccion correcta
+        bool direccionCorrecta = false;
+        
+        if (fichaSeleccionada.esDama) {
+            direccionCorrecta = true; // Las damas pueden moverse a donde sea
+        } else if (fichaSeleccionada.tipoFicha == 1 && distanciaY > 0) {
+            direccionCorrecta = true; // Blancas suben
+        } else if (fichaSeleccionada.tipoFicha == 2 && distanciaY < 0) {
+            direccionCorrecta = true; // Negras bajan
         }
 
-        // Si el movimiento cumple las reglas, ejecutamos el traslado
+        // Aqui validamos el movimiento es decir si vamos realizar un movimiento normal(1 casilla) o capturar una ficha(2 casillas)
+        if (direccionCorrecta)
+        {
+            // Movimiento normal (1 paso en diagonal)
+            if (distanciaX == 1 && Mathf.Abs(distanciaY) == 1)
+            {
+                movimientoValido = true;
+            }
+            // Captura (2 pasos en diagonal)
+            else if (distanciaX == 2 && Mathf.Abs(distanciaY) == 2)
+            {
+                int medioX = (fichaSeleccionada.gridX + x) / 2;
+                int medioY = (fichaSeleccionada.gridY + y) / 2;
+
+                // Buscamos qué ficha hay en la casilla intermedia
+                Ficha posibleEnemigo = ObtenerFichaEn(medioX, medioY);
+                
+                // Si hay una ficha y NO es de nuestro equipo, la podemos comer
+                if (posibleEnemigo != null && posibleEnemigo.tipoFicha != fichaSeleccionada.tipoFicha)
+                {
+                    movimientoValido = true;
+                    esCaptura = true;
+                    fichaCapturada = posibleEnemigo;
+                }
+            }
+        }
+
+        // Aqui realizamos el movimiento
         if (movimientoValido)
         {
-            // A. Actualizamos la matriz lógica
-            logicBoard[fichaSeleccionada.gridX, fichaSeleccionada.gridY] = 0; // Vaciamos la casilla antigua
-            logicBoard[x, y] = fichaSeleccionada.tipoFicha; // Llenamos la casilla nueva
+            // Si hemos comido, destruimos la ficha enemiga
+            if (esCaptura && fichaCapturada != null)
+            {
+                logicBoard[fichaCapturada.gridX, fichaCapturada.gridY] = 0;
+                Destroy(fichaCapturada.gameObject);
+            }
 
-            // B. Actualizamos los datos internos de la ficha
+            // Actualizamos la matriz
+            logicBoard[fichaSeleccionada.gridX, fichaSeleccionada.gridY] = 0; 
+            logicBoard[x, y] = fichaSeleccionada.tipoFicha; 
+
+            // Actualizamos los datos de la ficha
             fichaSeleccionada.gridX = x;
             fichaSeleccionada.gridY = y;
 
-            // C. Movemos el sprite visualmente en Unity
+            // Movemos el sprite visualmente
             float nuevaPosX = casillaOrigen.x + (x * tamañoCasilla);
             float nuevaPosY = casillaOrigen.y + (y * tamañoCasilla);
             fichaSeleccionada.transform.position = new Vector2(nuevaPosX, nuevaPosY);
 
-            // D. Soltamos la ficha y cambiamos de turno
+            // Aqui coronamos a la dama
+            // Si es blanca y llega a la fila 7, o es negra y llega a la fila 0
+            if (fichaSeleccionada.tipoFicha == 1 && y == 7 && !fichaSeleccionada.esDama)
+            {
+                fichaSeleccionada.Coronar();
+            }
+            else if (fichaSeleccionada.tipoFicha == 2 && y == 0 && !fichaSeleccionada.esDama)
+            {
+                fichaSeleccionada.Coronar();
+            }
+
+            // Aqui soltamos la ficha y cambiamos turno
             fichaSeleccionada.SeleccionarVisualmente(false);
             fichaSeleccionada = null;
-            turnoBlancas = !turnoBlancas; // Cambiamos de true a false, o de false a true
-            
-            Debug.Log("Movimiento realizado. Ahora es el turno de las " + (turnoBlancas ? "Blancas" : "Negras"));
+            turnoBlancas = !turnoBlancas;
+
+            if (!turnoBlancas) 
+            {
+                Invoke("LlamarIA", 1.0f); 
+            }
         }
     }
 
@@ -171,4 +216,51 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    Ficha ObtenerFichaEn(int x, int y)
+    {
+        // Busca todas las fichas que están agrupadas dentro de este BoardManager
+        Ficha[] todasLasFichas = GetComponentsInChildren<Ficha>();
+        foreach (Ficha f in todasLasFichas)
+        {
+            if (f.gridX == x && f.gridY == y)
+            {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    void LlamarIA() {
+        GetComponent<CpuDamas>().RealizarTurnoCPU();
+    }
+
+    // Esta funcion comprueba si los movimientos que realiza la Cpu cuando esta haciendo sus pruebas de movimiento son posibles
+    public bool EsMovimientoValidoParaIA(Ficha f, int x, int y, bool soloCaptura)
+    {
+        if (x < 0 || x > 7 || y < 0 || y > 7) return false; // Evita que la cpu mueva una ficha fuera del tablero
+        if (logicBoard[x, y] != 0) return false; // Comprueba si la casilla de destino esta vacia
+
+        int distX = Mathf.Abs(x - f.gridX);
+        int distY = y - f.gridY;
+
+        // Aqui prueba en todas las posiciones si puede capturar alguna ficha
+        if (soloCaptura)
+        {
+            if (distX == 2 && Mathf.Abs(distY) == 2)
+            {
+                int mx = (f.gridX + x) / 2;
+                int my = (f.gridY + y) / 2;
+                if (logicBoard[mx, my] != 0 && logicBoard[mx, my] != f.tipoFicha) return true;
+            }
+        }
+        else // Aqui verifica si es una ficha normal o una dama , y en base a eso permite realizar un movimiento normal
+        {
+            if (distX == 1)
+            {
+                if (f.esDama && Mathf.Abs(distY) == 1) return true;
+                if (f.tipoFicha == 2 && distY == -1) return true; 
+            }
+        }
+        return false;
+    }
 }
