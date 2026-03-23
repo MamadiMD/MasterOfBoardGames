@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class BoardManager : MonoBehaviour
 {
@@ -21,6 +24,8 @@ public class BoardManager : MonoBehaviour
     public Ficha fichaSeleccionada;
     public bool turnoBlancas = true;
 
+    public TextMeshProUGUI textoVictoria;
+    private bool juegoTerminado = false;
 
     void Start()
     {
@@ -69,6 +74,10 @@ public class BoardManager : MonoBehaviour
 
     void Update()
     {
+        if (!turnoBlancas) return;
+
+        if (juegoTerminado) return;
+
         if (Input.GetMouseButtonDown(0))
         {
             Vector2 posicionRaton = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -152,6 +161,9 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        if (fichaSeleccionada == null) return;
+        if (logicBoard[x, y] != 0) return;
+
         // Aqui realizamos el movimiento
         if (movimientoValido)
         {
@@ -191,12 +203,24 @@ public class BoardManager : MonoBehaviour
             fichaSeleccionada = null;
             turnoBlancas = !turnoBlancas;
 
-            if (!turnoBlancas) 
-            {
-                Invoke("LlamarIA", 1.0f); 
+            VerificarVictoria();
+
+            if (!juegoTerminado) {
+                if (!turnoBlancas) Invoke("LlamarIA", 1.0f);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Movimiento rechazado: Valido=" + movimientoValido + " Dirección=" + direccionCorrecta);
+        
+            // Si es el turno de la IA y falló, devolvemos el turno al jugador para no bloquear
+            if (!turnoBlancas) {
+                turnoBlancas = true;
+                fichaSeleccionada = null;
             }
         }
     }
+
 
     void IntentarSeleccionarFicha(Ficha ficha)
     {
@@ -237,30 +261,95 @@ public class BoardManager : MonoBehaviour
     // Esta funcion comprueba si los movimientos que realiza la Cpu cuando esta haciendo sus pruebas de movimiento son posibles
     public bool EsMovimientoValidoParaIA(Ficha f, int x, int y, bool soloCaptura)
     {
-        if (x < 0 || x > 7 || y < 0 || y > 7) return false; // Evita que la cpu mueva una ficha fuera del tablero
-        if (logicBoard[x, y] != 0) return false; // Comprueba si la casilla de destino esta vacia
-
+        // 1. Límites del tablero
+        if (x < 0 || x > 7 || y < 0 || y > 7) return false;
+        
+        // 2. ¿La casilla de destino está ocupada?
+        if (logicBoard[x, y] != 0) return false;
+    
         int distX = Mathf.Abs(x - f.gridX);
         int distY = y - f.gridY;
-
-        // Aqui prueba en todas las posiciones si puede capturar alguna ficha
+    
         if (soloCaptura)
         {
+            // Para capturar, la distancia debe ser exactamente 2 en X y 2 en Y
             if (distX == 2 && Mathf.Abs(distY) == 2)
             {
                 int mx = (f.gridX + x) / 2;
                 int my = (f.gridY + y) / 2;
-                if (logicBoard[mx, my] != 0 && logicBoard[mx, my] != f.tipoFicha) return true;
+                
+                // Comprobamos si hay una ficha enemiga en medio
+                int fichaEnMedio = logicBoard[mx, my];
+                if (fichaEnMedio != 0 && fichaEnMedio != f.tipoFicha)
+                {
+                    return true;
+                }
             }
         }
-        else // Aqui verifica si es una ficha normal o una dama , y en base a eso permite realizar un movimiento normal
+        else
         {
+            // Movimiento normal: distancia de 1
             if (distX == 1)
             {
+                // Si es Dama, puede ir en cualquier dirección vertical
                 if (f.esDama && Mathf.Abs(distY) == 1) return true;
-                if (f.tipoFicha == 2 && distY == -1) return true; 
+                
+                // Si es ficha negra normal, SOLO puede bajar (distY debe ser -1)
+                if (f.tipoFicha == 2 && distY == -1) return true;
             }
         }
+        
         return false;
+    }
+
+    void VerificarVictoria()
+    {
+        int blancas = 0;
+        int negras = 0;
+
+        // Recorremos la matriz lógica para contar
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                if (logicBoard[x, y] == 1) blancas++;
+                if (logicBoard[x, y] == 2) negras++;
+            }
+        }
+
+        // DEBUG: Para ver qué pasa en la matriz
+        Debug.Log("Matriz dice -> Blancas: " + blancas + " Negras: " + negras);
+
+        // IMPORTANTE: Solo disparamos la victoria si el juego NO está vacío.
+        if (blancas == 0 || negras == 0)
+        {
+            if (blancas == 0 && negras == 0) return; 
+
+            string mensajeResultado;
+            if (blancas > 0)
+            {
+                mensajeResultado = "¡GANA EL JUGADOR!";
+            }
+            else
+            {
+                mensajeResultado = "¡GANA LA CPU!";
+            }
+
+            FinalizarPartida(mensajeResultado);
+        }
+    }
+
+    void FinalizarPartida(string mensaje)
+    {
+        juegoTerminado = true;
+        textoVictoria.gameObject.SetActive(true);
+        textoVictoria.text = mensaje;
+
+        Invoke("CambiarEscena",3.0f);
+    }
+
+    void CambiarEscena()
+    {
+        SceneManager.LoadScene(1);
     }
 }
