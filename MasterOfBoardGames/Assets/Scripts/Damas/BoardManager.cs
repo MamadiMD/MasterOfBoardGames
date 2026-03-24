@@ -329,10 +329,12 @@ public class BoardManager : MonoBehaviour
             if (blancas > 0)
             {
                 mensajeResultado = "¡GANA EL JUGADOR!";
+                GameManager.instance.GanaJugador();
             }
             else
             {
                 mensajeResultado = "¡GANA LA CPU!";
+                GameManager.instance.GanaCPU();
             }
 
             FinalizarPartida(mensajeResultado);
