@@ -39,7 +39,7 @@ public class DominoManager : MonoBehaviour
             if (esTurnoJugador) manoJugador.Remove(ficha);
             else manoCPU.Remove(ficha);
 
-            PosicionarEnAncla(ficha, anclaCentro, !ficha.EsDoble);
+            PosicionarEnAncla(ficha, anclaCentro, !ficha.EsDoble, false);
 
             // Inicializamos las anclas laterales partiendo del centro
             anclaIzquierda.position = anclaCentro.position + new Vector3(-distanciaEntreFichas, 0, 0);
@@ -172,29 +172,25 @@ public class DominoManager : MonoBehaviour
         // Aquí conectaremos con la Opción 1 (Puntos de anclaje)
     }
 
-    private void PosicionarEnAncla(LogicaFicha ficha, Transform punto, bool esHorizontal)
+    private void PosicionarEnAncla(LogicaFicha ficha, Transform punto, bool esHorizontal, bool invertir)
     {
-        // 1. Mover a la posición del ancla
         ficha.transform.position = punto.position;
 
-        // 2. Rotar la ficha
         if (esHorizontal)
         {
-            // Lo rotamos 90 grados
-            ficha.transform.rotation = Quaternion.Euler(0, 0, 90f);
+            // 90 grados normal, o 270 (-90) para darle la vuelta completa
+            float anguloZ = invertir ? -270f : -90f;
+            ficha.transform.rotation = Quaternion.Euler(0, 0, anguloZ);
         }
         else
         {
-            // Posición vertical original
-            ficha.transform.rotation = Quaternion.identity;
+            // Para los dobles que van verticales
+            float anguloZ = invertir ? 180f : 0f;
+            ficha.transform.rotation = Quaternion.Euler(0, 0, anguloZ);
         }
 
-        // 3. Lógica de "Espejo" (Invertir números)
-        // Importante: Si el lado A debe ir hacia la izquierda pero el sprite 
-        // tiene el lado A arriba, a veces necesitarás rotar 270 en vez de 90.
-        // De momento, dejémoslo en 90 para probar el encaje.
-
-        // 4. Limpieza de componentes
+        // Aseguramos visibilidad y limpiamos componentes
+        ficha.GetComponent<SpriteRenderer>().enabled = true;
         if (ficha.TryGetComponent(out FichaInteractiva fi)) Destroy(fi);
         if (ficha.TryGetComponent(out BoxCollider2D col)) col.enabled = false;
     }
@@ -206,22 +202,87 @@ public class DominoManager : MonoBehaviour
 
         if (ficha.ladoA == valorMesa || ficha.ladoB == valorMesa)
         {
-            // Calculamos el nuevo extremo
-            int nuevoExtremo = (ficha.ladoA == valorMesa) ? ficha.ladoB : ficha.ladoA;
+            bool debeInvertir = false;
 
-            if (esIzquierda) extremoIzquierdo = nuevoExtremo;
-            else extremoDerecho = nuevoExtremo;
+            if (esIzquierda)
+            {
+                // En el lado IZQUIERDO:
+                // Si el que encaja es el lado A, el lado B debe quedar hacia afuera (extremo).
+                // Con rotación de 90°, el lado A queda a la derecha (pegado a la mesa). Perfecto.
+                // Pero si el que encaja es el B, tenemos que invertirla (180° más) para que el B sea el que pegue a la mesa.
+                debeInvertir = (ficha.ladoB == valorMesa);
+                extremoIzquierdo = (ficha.ladoA == valorMesa) ? ficha.ladoB : ficha.ladoA;
+            }
+            else
+            {
+                // En el lado DERECHO:
+                // Con rotación de 90°, el lado B es el que queda a la izquierda (pegado a la mesa).
+                // Por tanto, si lado B es el que coincide, no invertimos.
+                // Si lado A es el que coincide, invertimos para que el A mire a la izquierda.
+                debeInvertir = (ficha.ladoA == valorMesa);
+                extremoDerecho = (ficha.ladoA == valorMesa) ? ficha.ladoB : ficha.ladoA;
+            }
 
-            // Si no es un doble, la acostamos (true). Si es doble, puedes dejarla vertical (false).
-            bool debeIrHorizontal = !ficha.EsDoble; 
-            PosicionarEnAncla(ficha, ancla, debeIrHorizontal);
+            bool debeIrHorizontal = !ficha.EsDoble;
+            PosicionarEnAncla(ficha, ancla, debeIrHorizontal, debeInvertir);
 
-            // Desplazamos el ancla para la siguiente ficha
             float desplazamiento = debeIrHorizontal ? distanciaEntreFichas : distanciaEntreFichas / 2;
             ancla.position += new Vector3(esIzquierda ? -desplazamiento : desplazamiento, 0, 0);
 
             return true;
         }
         return false;
+    }
+
+    public void BotonRobarPresionado()
+    {
+        // 1. Solo puede robar si es su turno
+        if (!esTurnoJugador) return;
+
+        // 2. Robar del pozo
+        if (pozo.Count > 0)
+        {
+            LogicaFicha fichaRobada = pozo[0];
+            pozo.RemoveAt(0);
+
+            // Añadir a la lista lógica
+            manoJugador.Add(fichaRobada);
+
+            // Configuración para el jugador
+            GameObject fichaGO = fichaRobada.gameObject;
+            fichaGO.GetComponent<SpriteRenderer>().enabled = true;
+
+            // Importante: Volver a activar la interacción por si acaso
+            if (fichaGO.GetComponent<FichaInteractiva>() == null)
+                fichaGO.AddComponent<FichaInteractiva>();
+
+            fichaGO.GetComponent<FichaInteractiva>().esDelJugador = true;
+            fichaGO.GetComponent<BoxCollider2D>().enabled = true;
+
+            // Posicionamiento visual en la mano
+            ActualizarPosicionesManoJugador();
+
+            Debug.Log("Has robado una ficha. Ahora tienes: " + manoJugador.Count);
+        }
+        else
+        {
+            Debug.Log("El pozo está vacío.");
+            // Si el pozo está vacío y no tienes nada que jugar, 
+            // podrías añadir aquí un botón de "Pasar Turno" manual.
+        }
+    }
+
+    // Método para reordenar las fichas de la mano del jugador cuando roba una nueva ficha
+    private void ActualizarPosicionesManoJugador()
+    {
+        for (int i = 0; i < manoJugador.Count; i++)
+        {
+            // Ponemos la ficha como hija del contenedor de la mano
+            manoJugador[i].transform.SetParent(GameObject.Find("ManoJugador").transform);
+
+            float espacio = 1.2f; 
+            manoJugador[i].transform.localPosition = new Vector3(i * espacio, 0, 0);
+            manoJugador[i].transform.rotation = Quaternion.identity; // Que estén verticales en la mano
+        }
     }
 }
