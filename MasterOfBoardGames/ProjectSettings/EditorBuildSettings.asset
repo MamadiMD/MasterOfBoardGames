@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Damas.unity
     guid: b1dcc349452c14d4f9351249a7a75613
+  - enabled: 1
+    path: Assets/Scenes/Domino.unity
+    guid: bbe95ae9109dff245a6faae72d22fcc0
   m_configObjects: {}

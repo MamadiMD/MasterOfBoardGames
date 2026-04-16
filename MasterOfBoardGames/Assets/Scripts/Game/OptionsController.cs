@@ -9,6 +9,7 @@ public class OptionsController : MonoBehaviour
     public GameObject canvasAjedrez;
     public AudioSource audioClick;
     public GameObject canvasDamas;
+    public GameObject canvasDomino;
     public void VolverMenu()
     {
         audioClick.Play();
@@ -65,5 +66,24 @@ public class OptionsController : MonoBehaviour
     {
         audioClick.Play();
         canvasDamas.SetActive(true);
+    }
+
+    // Domino Options
+    public void CerrarDomino()
+    {
+        audioClick.Play();
+        canvasDomino.SetActive(false);
+    }
+
+    public void JugarDomino()
+    {
+        audioClick.Play();
+        SceneManager.LoadScene(4);
+    }
+
+    public void AbrirDomino()
+    {
+        audioClick.Play();
+        canvasDomino.SetActive(true);
     }
 }
