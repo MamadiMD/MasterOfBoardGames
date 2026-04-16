@@ -22,6 +22,12 @@ public class DominoManager : MonoBehaviour
     public Transform anclaDerecha;
     public Transform anclaCentro;
 
+    [Header("UI Final")]
+    public TMPro.TextMeshProUGUI textoResultado; 
+    public GameObject panelFinal;
+
+    public bool juegoActivo = true;
+
 
     private void Awake()
     {
@@ -69,6 +75,8 @@ public class DominoManager : MonoBehaviour
         {
             if (esTurnoJugador) manoJugador.Remove(ficha);
             else manoCPU.Remove(ficha);
+
+            ComprobarGanador();
 
             CambiarTurno();
             return true;
@@ -133,6 +141,8 @@ public class DominoManager : MonoBehaviour
 
     private IEnumerator RutinaTurnoCPU()
     {
+        if (!juegoActivo) yield break;
+        
         yield return new WaitForSeconds(1.5f);
 
         // La CPU intenta jugar
@@ -236,6 +246,8 @@ public class DominoManager : MonoBehaviour
 
     public void BotonRobarPresionado()
     {
+        if (!juegoActivo || !esTurnoJugador) return;
+
         // 1. Solo puede robar si es su turno
         if (!esTurnoJugador) return;
 
@@ -284,5 +296,65 @@ public class DominoManager : MonoBehaviour
             manoJugador[i].transform.localPosition = new Vector3(i * espacio, 0, 0);
             manoJugador[i].transform.rotation = Quaternion.identity; // Que estén verticales en la mano
         }
+    }
+
+    // Metodos para el final de la partida
+
+    private void ComprobarGanador()
+    {
+        // 1. Victoria por quedarse sin fichas
+        if (manoJugador.Count == 0)
+        {
+            FinalizarPartida("¡FELICIDADES! HAS GANADO");
+        }
+        else if (manoCPU.Count == 0)
+        {
+            FinalizarPartida("LA CPU HA GANADO... INTÉNTALO DE NUEVO");
+        }
+        // 2. Comprobar si el juego se ha trabado (nadie puede jugar y mazo vacío)
+        else if (pozo.Count == 0 && !TieneJugadaPosible(manoJugador) && !TieneJugadaPosible(manoCPU))
+        {
+            ResolverTraba();
+        }
+    }
+
+    private void ResolverTraba()
+    {
+        // En el dominó, si se traba, gana quien tenga menos puntos
+        int puntosJugador = CalcularPuntos(manoJugador);
+        int puntosCPU = CalcularPuntos(manoCPU);
+
+        if (puntosJugador < puntosCPU)
+            FinalizarPartida("JUEGO TRABADO: GANAS POR PUNTOS (" + puntosJugador + " vs " + puntosCPU + ")");
+        else if (puntosCPU < puntosJugador)
+            FinalizarPartida("JUEGO TRABADO: GANA CPU POR PUNTOS (" + puntosCPU + " vs " + puntosJugador + ")");
+        else
+            FinalizarPartida("¡EMPATE TÉCNICO!");
+    }
+
+    private int CalcularPuntos(List<LogicaFicha> mano)
+    {
+        int total = 0;
+        foreach (LogicaFicha f in mano)
+        {
+            total += (f.ladoA + f.ladoB);
+        }
+        return total;
+    }
+
+    private void FinalizarPartida(string mensaje)
+    {
+        juegoActivo = false; // <-- Detenemos todo
+
+        if (textoResultado != null)
+        {
+            textoResultado.text = mensaje;
+            textoResultado.gameObject.SetActive(true);
+            textoResultado.transform.SetAsLastSibling();
+        }
+
+        StopAllCoroutines(); 
+
+        Debug.Log("Juego Detenido.");
     }
 }
