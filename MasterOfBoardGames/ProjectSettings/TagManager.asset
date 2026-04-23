@@ -51,3 +51,9 @@ TagManager:
   - name: Fichas
     uniqueID: 378381915
     locked: 0
+  - name: Cartas_Mesa
+    uniqueID: 3403483209
+    locked: 0
+  - name: Cartas_Mano
+    uniqueID: 192646235
+    locked: 0
