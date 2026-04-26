@@ -6,6 +6,8 @@ public class Carta : MonoBehaviour
 {
     public enum Palo { Oros, Copas, Espadas, Bastos }
     
+    public bool esDelJugador = false;
+    
     [Header("Atributos")]
     public Palo palo;
     public int numero; 

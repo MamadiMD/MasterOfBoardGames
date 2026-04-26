@@ -21,11 +21,22 @@ public class BriscaManager : MonoBehaviour
     public Transform anclaJugador, anclaCPU;
     public bool turnoJugador = true;
 
+    [Header("Marcadores")]
     public int puntosJugador;
     public int puntosCPU;
+    public TMPro.TextMeshProUGUI textoPuntosJugador;
+    public TMPro.TextMeshProUGUI textoPuntosCPU;
+    public TMPro.TextMeshProUGUI textoContadorMazo;
+    public TMPro.TextMeshProUGUI textoAvisoBaza;
+
+    [Header("Final de Partida")]
+    public GameObject panelFinal;
+    public TMPro.TextMeshProUGUI textoResultadoFinal;
+    private bool juegoTerminado = false;
 
     void Awake() => Instance = this;
 
+    
     void Start()
     {
         // Esperamos un momento a que la baraja se cree y se mezcle
@@ -60,23 +71,73 @@ public class BriscaManager : MonoBehaviour
 
     public void DarCarta(bool esJugador)
     {
-        if (baraja.mazo.Count == 0) return;
+        Carta cartaARobar = null;
 
-        GameObject cartaGO = baraja.mazo[0];
-        baraja.mazo.RemoveAt(0);
-        Carta cartaScript = cartaGO.GetComponent<Carta>();
-
-        if (esJugador)
+        if (baraja.mazo.Count > 0)
         {
-            manoJugador.Add(cartaScript);
-            cartaScript.MostrarLado(true); // Tú ves tus cartas
-            ActualizarVisualMano(true);
+            GameObject cartaGO = baraja.mazo[0];
+            baraja.mazo.RemoveAt(0);
+            cartaARobar = cartaGO.GetComponent<Carta>();
         }
-        else
+        else if (cartaTriunfo != null)
         {
-            manoCPU.Add(cartaScript);
-            cartaScript.MostrarLado(false); // No ves las de la CPU
-            ActualizarVisualMano(false);
+            // Si no hay mazo, el siguiente se lleva el triunfo de la mesa
+            cartaARobar = cartaTriunfo;
+            cartaTriunfo = null; 
+            Debug.Log("¡Se ha robado el Triunfo!");
+        }
+
+        if (cartaARobar != null)
+        {
+            cartaARobar.esDelJugador = esJugador;
+
+            if (esJugador)
+            {
+                manoJugador.Add(cartaARobar);
+                cartaARobar.MostrarLado(true);
+            }
+            else
+            {
+                manoCPU.Add(cartaARobar);
+                cartaARobar.MostrarLado(false);
+            }
+            ActualizarVisualMano(esJugador);
+        }
+
+        ActualizarContadorMazo();
+
+        // Comprobar si ya no quedan cartas ni en manos ni en mazo
+        ComprobarFinalPartida();
+    }
+
+    void ComprobarFinalPartida()
+    {
+        if (baraja.mazo.Count == 0 && cartaTriunfo == null && manoJugador.Count == 0 && manoCPU.Count == 0)
+        {
+            juegoTerminado = true;
+            string mensaje = puntosJugador > puntosCPU ? "¡HAS GANADO LA PARTIDA!" : "HA GANADO LA CPU";
+            if (puntosJugador == puntosCPU) mensaje = "¡EMPATE!";
+
+            Debug.Log(mensaje);
+        }
+    }
+
+    void ActualizarContadorMazo()
+    {
+        if (textoContadorMazo != null)
+        {
+            // Sumamos las cartas que quedan por salir del mazo
+            int cantidadMazo = baraja.mazo.Count;
+            
+            // Sumamos 1 si el triunfo todavía está físicamente en la mesa
+            int cantidadTriunfo = (cartaTriunfo != null) ? 1 : 0;
+    
+            int totalRestante = cantidadMazo + cantidadTriunfo;
+            
+            textoContadorMazo.text = "Cartas restantes: " + totalRestante;
+            
+            // Opcional: Si no quedan cartas, ponerlo en rojo
+            if(totalRestante == 0) textoContadorMazo.color = Color.red;
         }
     }
 
@@ -95,35 +156,44 @@ public class BriscaManager : MonoBehaviour
 
     public void JugadorLanzaCarta(Carta carta)
     {
-        if (!turnoJugador) return;
+        if (!turnoJugador || cartaJugadorMesa != null) return;
 
         cartaJugadorMesa = carta;
         manoJugador.Remove(carta);
-
         carta.transform.position = anclaJugador.position;
-
         ActualizarVisualMano(true);
-        turnoJugador = false;
 
-        Invoke("TurnoCPU", 1.0f);
+        // Si la CPU ya había lanzado su carta, entonces resolvemos
+        if (cartaCPUMesa != null)
+        {
+            Invoke("ResolverBaza", 1.0f);
+        }
+        else // Si no, le toca a la CPU responder
+        {
+            turnoJugador = false;
+            Invoke("TurnoCPU", 1.0f);
+        }
     }
 
     void TurnoCPU()
     {
-        if (manoCPU.Count == 0) return;
+        if (manoCPU.Count == 0 || cartaCPUMesa != null) return;
 
-        // La CPU elige su primera carta
         cartaCPUMesa = manoCPU[0];
         manoCPU.RemoveAt(0);
-
-        // Mover al ancla y mostrarla
         cartaCPUMesa.transform.position = anclaCPU.position;
         cartaCPUMesa.MostrarLado(true);
-
         ActualizarVisualMano(false);
 
-        // Tras un segundo, decidimos quién gana
-        Invoke("ResolverBaza", 1.5f);
+        // Si el jugador ya había lanzado su carta, resolvemos
+        if (cartaJugadorMesa != null)
+        {
+            Invoke("ResolverBaza", 1.0f);
+        }
+        else // Si no, el jugador debe responder (esperamos a que arrastre su carta)
+        {
+            turnoJugador = true;
+        }
     }
 
     int ObtenerFuerza(Carta carta)
@@ -141,55 +211,82 @@ public class BriscaManager : MonoBehaviour
 
     void ResolverBaza()
     {
-        bool ganaJugador = false;
+        if (cartaJugadorMesa == null || cartaCPUMesa == null) 
+        {
+            Debug.LogWarning("Intentando resolver baza pero faltan cartas en la mesa.");
+            return;
+        }
 
-        // Caso 1: Son del mismo palo
+        if (juegoTerminado) return;
+
+        bool ganaJugador = false;
+        int puntosEnJuego = cartaJugadorMesa.valorPuntos + cartaCPUMesa.valorPuntos;
+
+        // Lógica de quién gana
         if (cartaJugadorMesa.palo == cartaCPUMesa.palo)
         {
             ganaJugador = ObtenerFuerza(cartaJugadorMesa) > ObtenerFuerza(cartaCPUMesa);
         }
-        // Caso 2: Palos distintos, pero la CPU tiró Triunfo
         else if (cartaCPUMesa.palo == cartaTriunfo.palo)
         {
             ganaJugador = false; 
         }
-        // Caso 3: Palos distintos, pero el Jugador tiró Triunfo 
         else if (cartaJugadorMesa.palo == cartaTriunfo.palo)
         {
             ganaJugador = true;
         }
-        // Caso 4: Palos distintos y ninguno es triunfo 
         else
         {
-            // Si el jugador empezó la mano, gana él. Si empezó la CPU, gana ella.
-            ganaJugador = true; 
+            // En Brisca, si no hay triunfo, gana el que "mano" (el que lanzó primero)
+            // Si el turno era del jugador al empezar, gana el jugador.
+            ganaJugador = !turnoJugador; 
         }
 
-        Debug.Log(ganaJugador ? "¡Ganas la baza!" : "La CPU gana la baza.");
-
-        int suma = cartaJugadorMesa.valorPuntos + cartaCPUMesa.valorPuntos;
-
-        if (!ganaJugador)
+        if (textoAvisoBaza != null)
         {
-            puntosCPU += suma;
-        }
-        else
-        {
-            puntosJugador += suma;
+            textoAvisoBaza.text = ganaJugador ? "Gana el Jugador" : "Gana la CPU";
+            textoAvisoBaza.gameObject.SetActive(true);
         }
 
-        // Limpiar la mesa y repartir puntos 
+        // Sumar puntos
+        if (ganaJugador) {
+            puntosJugador += puntosEnJuego;
+            ActualizarInterfazPuntos();
+        } else {
+            puntosCPU += puntosEnJuego;
+            ActualizarInterfazPuntos();
+        }
+
         StartCoroutine(LimpiarMesaYRobar(ganaJugador));
+    }
+
+    void ActualizarInterfazPuntos()
+    {
+        textoPuntosJugador.text = "Puntos Jugador: " + puntosJugador;
+        textoPuntosCPU.text = "Puntos CPU: " + puntosCPU;
     }
 
     IEnumerator LimpiarMesaYRobar(bool ganaJugador)
     {
-        yield return new WaitForSeconds(2.0f); // Pausa para que el jugador vea qué pasó
+        yield return new WaitForSeconds(2.0f); 
 
-        Destroy(cartaJugadorMesa.gameObject);
-        Destroy(cartaCPUMesa.gameObject);
+        if (textoAvisoBaza != null) 
+        textoAvisoBaza.gameObject.SetActive(false);
 
-        if (baraja.mazo.Count > 0)
+        // 1. Guardamos la referencia localmente antes de limpiar las variables globales
+        GameObject objJugador = cartaJugadorMesa.gameObject;
+        GameObject objCPU = cartaCPUMesa.gameObject;
+
+        // 2. Limpiamos las variables globales del Manager para que no haya conflictos
+        cartaJugadorMesa = null;
+        cartaCPUMesa = null;
+
+        // 3. Desactivamos los objetos 
+        objJugador.SetActive(false);
+        objCPU.SetActive(false);
+
+        // 4. Lógica de robo
+        if (baraja.mazo.Count > 0 || cartaTriunfo != null)
         {
             if (ganaJugador)
             {
@@ -207,9 +304,12 @@ public class BriscaManager : MonoBehaviour
         }
         else
         {
-            // Si no hay mazo, solo se cambia el turno
+            // Si no hay cartas para robar, simplemente pasamos el turno
             turnoJugador = ganaJugador;
             if (!turnoJugador) Invoke("TurnoCPU", 1.0f);
         }
+
+        Destroy(objJugador);
+        Destroy(objCPU);
     }
 }

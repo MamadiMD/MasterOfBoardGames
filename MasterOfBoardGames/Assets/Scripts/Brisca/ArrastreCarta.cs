@@ -8,10 +8,26 @@ public class ArrastreCarta : MonoBehaviour
     private Vector3 posicionOriginal;
     private Camera cam;
 
-    void Start() => cam = Camera.main;
+    private Carta miCarta;
+
+    void Start() 
+    {
+        cam = Camera.main;
+        miCarta = GetComponent<Carta>(); // Obtenemos el script Carta
+    }
 
     void OnMouseDown()
     {
+
+        // 1. ¿Es mi carta?
+        if (!miCarta.esDelJugador) return; 
+
+        // 2. ¿Es mi turno?
+        if (!BriscaManager.Instance.turnoJugador) return;
+
+        // 3. ¿La mesa está ocupada? 
+        if (BriscaManager.Instance.cartaJugadorMesa != null) return;
+
         posicionOriginal = transform.position;
         arrastrando = true;
     }
