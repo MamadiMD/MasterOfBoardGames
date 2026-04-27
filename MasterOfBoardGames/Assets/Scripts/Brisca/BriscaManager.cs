@@ -34,6 +34,8 @@ public class BriscaManager : MonoBehaviour
     public TMPro.TextMeshProUGUI textoResultadoFinal;
     private bool juegoTerminado = false;
 
+    private string nombrePaloTriunfo;
+
     void Awake() => Instance = this;
 
     
@@ -63,6 +65,7 @@ public class BriscaManager : MonoBehaviour
         GameObject triunfoGO = baraja.mazo[0];
         baraja.mazo.RemoveAt(0);
         cartaTriunfo = triunfoGO.GetComponent<Carta>();
+        nombrePaloTriunfo = cartaTriunfo.palo.ToString();
         
         triunfoGO.transform.position = triunfoPos.position;
         triunfoGO.transform.rotation = triunfoPos.rotation;
@@ -112,13 +115,34 @@ public class BriscaManager : MonoBehaviour
 
     void ComprobarFinalPartida()
     {
-        if (baraja.mazo.Count == 0 && cartaTriunfo == null && manoJugador.Count == 0 && manoCPU.Count == 0)
-        {
-            juegoTerminado = true;
-            string mensaje = puntosJugador > puntosCPU ? "¡HAS GANADO LA PARTIDA!" : "HA GANADO LA CPU";
-            if (puntosJugador == puntosCPU) mensaje = "¡EMPATE!";
+        Debug.Log($"Check Final: Mazo({baraja.mazo.Count}) Triunfo({(cartaTriunfo == null ? "null" : "si")}) ManoJ({manoJugador.Count}) ManoCPU({manoCPU.Count})");
 
-            Debug.Log(mensaje);
+        // En la Brisca, la partida termina cuando nadie tiene cartas en la mano
+        if (manoJugador.Count == 0 && manoCPU.Count == 0)
+        {
+            if (juegoTerminado) return; 
+
+            juegoTerminado = true;
+
+            if (panelFinal != null)
+            {
+                panelFinal.SetActive(true);
+
+                if (puntosJugador > puntosCPU)
+                {
+                    textoResultadoFinal.text = "¡VICTORIA!\n" + "Gana el Jugador con\n" +puntosJugador + " Puntos";
+                    textoResultadoFinal.color = Color.green;
+                }
+                else if (puntosCPU > puntosJugador)
+                {
+                    textoResultadoFinal.text = "DERROTA\n" + "Gana la CPU con\n" +puntosCPU + " Puntos";
+                    textoResultadoFinal.color = Color.red;
+                }
+                else
+                {
+                    textoResultadoFinal.text = "EMPATE\n60 - 60";
+                }
+            }
         }
     }
 
@@ -158,8 +182,9 @@ public class BriscaManager : MonoBehaviour
     {
         if (!turnoJugador || cartaJugadorMesa != null) return;
 
-        cartaJugadorMesa = carta;
         manoJugador.Remove(carta);
+
+        cartaJugadorMesa = carta;
         carta.transform.position = anclaJugador.position;
         ActualizarVisualMano(true);
 
@@ -173,6 +198,8 @@ public class BriscaManager : MonoBehaviour
             turnoJugador = false;
             Invoke("TurnoCPU", 1.0f);
         }
+
+        if (baraja.mazo.Count == 0 && cartaTriunfo == null) ComprobarFinalPartida();
     }
 
     void TurnoCPU()
@@ -181,6 +208,7 @@ public class BriscaManager : MonoBehaviour
 
         cartaCPUMesa = manoCPU[0];
         manoCPU.RemoveAt(0);
+
         cartaCPUMesa.transform.position = anclaCPU.position;
         cartaCPUMesa.MostrarLado(true);
         ActualizarVisualMano(false);
@@ -194,6 +222,8 @@ public class BriscaManager : MonoBehaviour
         {
             turnoJugador = true;
         }
+
+        if (baraja.mazo.Count == 0 && cartaTriunfo == null) ComprobarFinalPartida();
     }
 
     int ObtenerFuerza(Carta carta)
@@ -220,25 +250,26 @@ public class BriscaManager : MonoBehaviour
         if (juegoTerminado) return;
 
         bool ganaJugador = false;
+        string paloJ = cartaJugadorMesa.palo.ToString();
+        string paloC = cartaCPUMesa.palo.ToString();
         int puntosEnJuego = cartaJugadorMesa.valorPuntos + cartaCPUMesa.valorPuntos;
 
         // Lógica de quién gana
-        if (cartaJugadorMesa.palo == cartaCPUMesa.palo)
+        if (paloJ == paloC)
         {
             ganaJugador = ObtenerFuerza(cartaJugadorMesa) > ObtenerFuerza(cartaCPUMesa);
         }
-        else if (cartaCPUMesa.palo == cartaTriunfo.palo)
+        // USAMOS EL NOMBRE GUARDADO, NO LA CARTA
+        else if (paloC.Equals(nombrePaloTriunfo))
         {
             ganaJugador = false; 
         }
-        else if (cartaJugadorMesa.palo == cartaTriunfo.palo)
+        else if (paloJ.Equals(nombrePaloTriunfo))
         {
             ganaJugador = true;
         }
         else
         {
-            // En Brisca, si no hay triunfo, gana el que "mano" (el que lanzó primero)
-            // Si el turno era del jugador al empezar, gana el jugador.
             ganaJugador = !turnoJugador; 
         }
 
@@ -311,5 +342,9 @@ public class BriscaManager : MonoBehaviour
 
         Destroy(objJugador);
         Destroy(objCPU);
+
+        yield return new WaitForSeconds(0.5f);
+    
+        ComprobarFinalPartida();
     }
 }
