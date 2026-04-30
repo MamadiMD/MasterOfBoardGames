@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BriscaManager : MonoBehaviour
 {
@@ -130,13 +131,11 @@ public class BriscaManager : MonoBehaviour
 
                 if (puntosJugador > puntosCPU)
                 {
-                    textoResultadoFinal.text = "¡VICTORIA!\n" + "Gana el Jugador con\n" +puntosJugador + " Puntos";
-                    textoResultadoFinal.color = Color.green;
+                    StartCoroutine(GanaJugadorPartida());
                 }
                 else if (puntosCPU > puntosJugador)
                 {
-                    textoResultadoFinal.text = "DERROTA\n" + "Gana la CPU con\n" +puntosCPU + " Puntos";
-                    textoResultadoFinal.color = Color.red;
+                    StartCoroutine(GanaCpuPartida());
                 }
                 else
                 {
@@ -146,6 +145,26 @@ public class BriscaManager : MonoBehaviour
         }
     }
 
+    IEnumerator GanaJugadorPartida()
+    {
+        yield return new WaitForSeconds(4.0f);
+        textoResultadoFinal.text = "¡VICTORIA!\n" + "Gana el Jugador con\n" +puntosJugador + " Puntos";
+        textoResultadoFinal.color = Color.green;
+        GameManager.instance.GanaJugador();
+        yield return new WaitForSeconds(6.0f);
+        SceneManager.LoadScene(1);
+        
+    }
+
+    IEnumerator GanaCpuPartida()
+    {
+        yield return new WaitForSeconds(4.0f);
+        textoResultadoFinal.text = "DERROTA\n" + "Gana la CPU con\n" +puntosCPU + " Puntos";
+        textoResultadoFinal.color = Color.red;
+        GameManager.instance.GanaCPU();
+        yield return new WaitForSeconds(6.0f);
+        SceneManager.LoadScene(1);
+    }
     void ActualizarContadorMazo()
     {
         if (textoContadorMazo != null)
@@ -347,4 +366,5 @@ public class BriscaManager : MonoBehaviour
     
         ComprobarFinalPartida();
     }
+
 }

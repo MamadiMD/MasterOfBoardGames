@@ -10,6 +10,7 @@ public class OptionsController : MonoBehaviour
     public AudioSource audioClick;
     public GameObject canvasDamas;
     public GameObject canvasDomino;
+    public GameObject canvasBrisca;
     public void VolverMenu()
     {
         audioClick.Play();
@@ -85,5 +86,26 @@ public class OptionsController : MonoBehaviour
     {
         audioClick.Play();
         canvasDomino.SetActive(true);
+    }
+
+    // Brisca Options
+
+    // Domino Options
+    public void CerrarBrisca()
+    {
+        audioClick.Play();
+        canvasBrisca.SetActive(false);
+    }
+
+    public void JugarBrisca()
+    {
+        audioClick.Play();
+        SceneManager.LoadScene(5);
+    }
+
+    public void AbrirBrisca()
+    {
+        audioClick.Play();
+        canvasBrisca.SetActive(true);
     }
 }

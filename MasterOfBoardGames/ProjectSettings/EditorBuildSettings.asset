@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Domino.unity
     guid: bbe95ae9109dff245a6faae72d22fcc0
+  - enabled: 1
+    path: Assets/Scenes/Brisca.unity
+    guid: 94a20fe7ff2a725419f1ebb4c32efbe5
   m_configObjects: {}
