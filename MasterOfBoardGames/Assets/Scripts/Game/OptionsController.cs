@@ -11,6 +11,7 @@ public class OptionsController : MonoBehaviour
     public GameObject canvasDamas;
     public GameObject canvasDomino;
     public GameObject canvasBrisca;
+    public GameObject canvasShisima;
     public void VolverMenu()
     {
         audioClick.Play();
@@ -90,7 +91,6 @@ public class OptionsController : MonoBehaviour
 
     // Brisca Options
 
-    // Domino Options
     public void CerrarBrisca()
     {
         audioClick.Play();
@@ -107,5 +107,24 @@ public class OptionsController : MonoBehaviour
     {
         audioClick.Play();
         canvasBrisca.SetActive(true);
+    }
+
+    // Shisima options
+    public void CerrarShisima()
+    {
+        audioClick.Play();
+        canvasShisima.SetActive(false);
+    }
+
+    public void JugarShisima()
+    {
+        audioClick.Play();
+        SceneManager.LoadScene(6);
+    }
+
+    public void AbrirShisima()
+    {
+        audioClick.Play();
+        canvasShisima.SetActive(true);
     }
 }

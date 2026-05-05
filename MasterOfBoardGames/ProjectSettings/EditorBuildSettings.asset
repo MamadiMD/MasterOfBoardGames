@@ -23,4 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Brisca.unity
     guid: 94a20fe7ff2a725419f1ebb4c32efbe5
+  - enabled: 1
+    path: Assets/Scenes/Yishima.unity
+    guid: 242885cd0b8ccf34c93ea40abd94042e
   m_configObjects: {}
